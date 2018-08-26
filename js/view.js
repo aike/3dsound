@@ -9,9 +9,20 @@
 var gui;
 var stats;
 var actx = null;
+var srcdrum, srcbass, srcpiano;
 
 $(function() {
 	document.querySelector('button').addEventListener('click', function() {
+		if (actx != null) {
+			actx = null;
+			srcdrum.stop(0);
+			srcbass.stop(0);
+			srcpiano.stop(0);
+			return;
+		}
+
+		document.querySelector('#msg').innerText = ' Loading...';
+
 		var audioctx = new AudioContext();
 		actx = audioctx;
 	 
@@ -20,34 +31,42 @@ $(function() {
 		var pianosound = null;
 		 
 		function Play() {
-		    var srcdrum = audioctx.createBufferSource();
+		    srcdrum = audioctx.createBufferSource();
 		    srcdrum.buffer = drumsound;
 		    srcdrum.loop = true;
 		    var pandrum = audioctx.createPanner();
 	    	pandrum.panningModel = "HRTF";
-			pandrum.setPosition(0, 0, 5);
+			pandrum.setPosition(0, 3, 16);
+			var gaindrum = audioctx.createGain();
+			gaindrum.gain.value = 1.0;
 		    srcdrum.connect(pandrum);
-		    pandrum.connect(audioctx.destination);
+		    pandrum.connect(gaindrum);
+		    gaindrum.connect(audioctx.destination);
 
 
-		    var srcbass = audioctx.createBufferSource();
+		    srcbass = audioctx.createBufferSource();
 		    srcbass.buffer = basssound;
 		    srcbass.loop = true;
 		    var panbass = audioctx.createPanner();
 	    	panbass.panningModel = "HRTF";
-			panbass.setPosition(4, 2, 15);
+			panbass.setPosition(4, 3, 22);
+			var gainbass = audioctx.createGain();
+			gainbass.gain.value = 0.4;
 		    srcbass.connect(panbass);
-		    panbass.connect(audioctx.destination);
+		    panbass.connect(gainbass);
+		    gainbass.connect(audioctx.destination);
 
-
-		    var srcpiano = audioctx.createBufferSource();
+		    srcpiano = audioctx.createBufferSource();
 		    srcpiano.buffer = pianosound;
 		    srcpiano.loop = true;
 		    var panpiano = audioctx.createPanner();
 	    	panpiano.panningModel = "HRTF";
-			panpiano.setPosition(-3, 2, 18);
+			panpiano.setPosition(-3, 3, 24);
+			var gainpiano = audioctx.createGain();
+			gainpiano.gain.value = 0.4;
 		    srcpiano.connect(panpiano);
-		    panpiano.connect(audioctx.destination);
+		    panpiano.connect(gainpiano);
+		    gainpiano.connect(audioctx.destination);
 
 		    srcdrum.start();
 		    srcbass.start();
@@ -72,6 +91,7 @@ $(function() {
 				basssound = b1;
 				LoadSample(audioctx, "wav/piano.wav", function(b2){
 					pianosound = b2;
+					document.querySelector('#msg').innerText = '';
 					Play();
 				});
 			});
@@ -127,16 +147,7 @@ $(function() {
 	var white = 0xFFFFFF;
 
 	//////////// Define Objects
-	gui.define("marker", {obj:'group', data:[
-		{obj:'cylinder', scale:5, h:0.05, rx:Math.PI/2, col:red},
-		{obj:'circle', scale:4.5, z:0.13, col:white},
-		{obj:'circle', scale:3, z:0.14, col:red},
-		{obj:'circle', scale:2.7, z:0.15, col:white},
-		{obj:'circle', scale:0.8, z:0.16, col:red},
-	]});
 
-	var y0 = 2;
-	var z0 = 8;
 	var objects = {
 		scale: 0.1,
 		data:[
@@ -144,9 +155,9 @@ $(function() {
 		{obj:'texture', name:'bass', file:'images/bass.png'},
 		{obj:'texture', name:'piano', file:'images/piano.png'},
 
-		{obj:'box', x:0, y:y0+0, z:z0+5, d:0.01, scale:2, tex:'drum'},
-		{obj:'box', x:4, y:y0+2, z:z0+15, d:0.01, scale:2, tex:'bass'},
-		{obj:'box', x:-3, y:y0+2, z:z0+18, d:0.01, scale:2, tex:'piano'}
+		{obj:'box', x:0, y:3, z:16, d:0.01, scale:2, tex:'drum'},
+		{obj:'box', x:4, y:3, z:22, d:0.01, scale:2, tex:'bass'},
+		{obj:'box', x:-3, y:3, z:24, d:0.01, scale:2, tex:'piano'}
 	]};
 	objects.data.push(grid);
 
@@ -203,14 +214,20 @@ $(function() {
 	var lpf = 0.05;
 
 
-	var len = 10;  // low pass filter
+	var len = 15;  // low pass filter
 	var ax = [len];
 	var ay = [len];
 	var al = [len];
 	var ap = 0;
 
+	var init = false;
 	tracker.on('track', function(event) {
 		if (event.data.length > 0) {
+			if (!init) {
+				document.querySelector('button').style.display = "inline";			
+				init = true;
+			}
+
 			var rect = event.data[0];
 
 			ax[ap] = rect.x - rect.width;
@@ -243,7 +260,8 @@ $(function() {
 			camera.rotation.x = current_y * 0.002;
 
 			if (actx != null) {
-				actx.AudioListener.setPosition(cx, cy, cz);
+				//actx.AudioListener.setPosition(cx, cy, cz);
+				actx.listener.setPosition(cx * 10, cy * 10, cz * 10);
 			}
 			gui.setDirty();
 		}
