@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Face Tracking</title>
+
+  <style>
+  #video {
+    position: absolute;
+    left: 100px;
+    top: 100px;
+    z-index: -1000;
+  }
+  #txt {
+    position: absolute;
+    top: 0px;
+    color: #888;
+    font-size: 12px;
+  }
+  a:link { color: #888; }
+  a:visited { color: #888; }
+  </style>
+
+    <script type="text/javascript" src="js/jquery-2.1.3.min.js"></script>
+    <script type="text/javascript" src="js/tracking-min.js"></script>
+    <script type="text/javascript" src="js/data/face-min.js"></script>
+    <script type="text/javascript" src="js/three.min.js"></script>
+    <script type="text/javascript" src="js/Stats.js"></script>
+    <script type="text/javascript" src="js/ThreePiece2.js"></script>
+    <script type="text/javascript" src="js/view.js"></script>
+</head>
+<body style="background-color:#000;">
+    <div id="draw" style="margin:0 auto;"></div>
+    <video id="video" width="320" height="240" preload autoplay loop muted></video>
+    <canvas id="canvas" width="320" height="240"></canvas>
+    <div id="txt">created by <a href="https://twitter.com/aike1000">aike</a><br>inspired by J.Lee's <a href="https://www.youtube.com/watch?v=Jd3-eiid-Uw">WiiRemote head tracking demo</a><br>
+    <button>Play</button></div>
+</body>
+</html>
